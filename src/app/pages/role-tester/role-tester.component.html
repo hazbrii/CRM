@@ -1,0 +1,90 @@
+<div class="role-tester-container">
+  <div class="role-tester-card">
+    <h1>Role & Permission Tester</h1>
+    <p class="description">
+      Use this page to test different user roles and their associated permissions.
+      Switch roles and try accessing different routes to see the authorization system in action.
+    </p>
+    
+    <div class="current-role">
+      <h2>Current Role: <span class="role-badge">{{ currentRole }}</span></h2>
+    </div>
+    
+    <div class="role-selector">
+      <h3>Select Role:</h3>
+      <div class="role-buttons">
+        <button 
+          *ngFor="let role of availableRoles" 
+          class="role-btn" 
+          [class.active]="role === currentRole"
+          (click)="changeRole(role)">
+          {{ role }}
+        </button>
+      </div>
+    </div>
+    
+    <div class="permissions-info">
+      <h3>Current Permissions:</h3>
+      <div class="permissions-grid">
+        <div class="permission-item">
+          <div class="permission-name">View Users</div>
+          <div class="permission-status" [class.granted]="hasPermission('canViewUsers')" [class.denied]="!hasPermission('canViewUsers')">
+            {{ hasPermission('canViewUsers') ? '✓' : '✗' }}
+          </div>
+        </div>
+        <div class="permission-item">
+          <div class="permission-name">Edit Users</div>
+          <div class="permission-status" [class.granted]="hasPermission('canEditUsers')" [class.denied]="!hasPermission('canEditUsers')">
+            {{ hasPermission('canEditUsers') ? '✓' : '✗' }}
+          </div>
+        </div>
+        <div class="permission-item">
+          <div class="permission-name">Delete Users</div>
+          <div class="permission-status" [class.granted]="hasPermission('canDeleteUsers')" [class.denied]="!hasPermission('canDeleteUsers')">
+            {{ hasPermission('canDeleteUsers') ? '✓' : '✗' }}
+          </div>
+        </div>
+        <div class="permission-item">
+          <div class="permission-name">View Teams</div>
+          <div class="permission-status" [class.granted]="hasPermission('canViewTeams')" [class.denied]="!hasPermission('canViewTeams')">
+            {{ hasPermission('canViewTeams') ? '✓' : '✗' }}
+          </div>
+        </div>
+        <div class="permission-item">
+          <div class="permission-name">Edit Teams</div>
+          <div class="permission-status" [class.granted]="hasPermission('canEditTeams')" [class.denied]="!hasPermission('canEditTeams')">
+            {{ hasPermission('canEditTeams') ? '✓' : '✗' }}
+          </div>
+        </div>
+        <div class="permission-item">
+          <div class="permission-name">View Projects</div>
+          <div class="permission-status" [class.granted]="hasPermission('canViewProjects')" [class.denied]="!hasPermission('canViewProjects')">
+            {{ hasPermission('canViewProjects') ? '✓' : '✗' }}
+          </div>
+        </div>
+        <div class="permission-item">
+          <div class="permission-name">Edit Projects</div>
+          <div class="permission-status" [class.granted]="hasPermission('canEditProjects')" [class.denied]="!hasPermission('canEditProjects')">
+            {{ hasPermission('canEditProjects') ? '✓' : '✗' }}
+          </div>
+        </div>
+        <div class="permission-item">
+          <div class="permission-name">View Reports</div>
+          <div class="permission-status" [class.granted]="hasPermission('canViewReports')" [class.denied]="!hasPermission('canViewReports')">
+            {{ hasPermission('canViewReports') ? '✓' : '✗' }}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="test-links">
+      <h3>Test Navigation:</h3>
+      <div class="links-grid">
+        <a routerLink="/users" class="test-link">Users Page</a>
+        <a routerLink="/teams" class="test-link">Teams Page</a>
+        <a routerLink="/projects" class="test-link">Projects Page</a>
+        <a routerLink="/reports" class="test-link">Reports Page</a>
+      </div>
+    </div>
+  </div>
+</div>

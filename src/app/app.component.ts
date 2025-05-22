@@ -15,13 +15,20 @@ import { CommonModule } from '@angular/common';
 export class AppComponent {
   title = 'angular-project';
   showLayout = false;
+  isMobileSidebarOpen = false;
   
   constructor(private router: Router) {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         // Hide layout on auth pages
         this.showLayout = !event.url.includes('/login') && !event.url.includes('/create-account');
+        // Close mobile sidebar on navigation
+        this.isMobileSidebarOpen = false;
       }
     });
+  }
+  
+  toggleMobileSidebar(): void {
+    this.isMobileSidebarOpen = !this.isMobileSidebarOpen;
   }
 }

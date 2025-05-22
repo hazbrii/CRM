@@ -1,11 +1,11 @@
 <!-- Main layout for authenticated pages -->
 <div class="app-container" *ngIf="showLayout">
-  <app-header></app-header>
+  <app-header (sidebarToggle)="toggleMobileSidebar()"></app-header>
   
   <div class="main-container">
-    <app-sidebar></app-sidebar>
+    <app-sidebar [isMobileOpen]="isMobileSidebarOpen"></app-sidebar>
     
-    <main class="content">
+    <main class="content" [class.with-sidebar-open]="isMobileSidebarOpen">
       <router-outlet></router-outlet>
     </main>
   </div>

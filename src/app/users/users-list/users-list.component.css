@@ -5,10 +5,11 @@
 .users-panel {
   width: 100%;
   max-width: 100%;
-  background-color: #ffffff;
-  border-radius: 8px;
+  background-color: var(--white);
+  border-radius: var(--border-radius);
   padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--box-shadow);
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 .panel-header {
@@ -19,9 +20,9 @@
 }
 
 .users-title {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
+  color: var(--gray-900);
   margin: 0;
 }
 
@@ -29,14 +30,14 @@
   display: flex;
   align-items: center;
   padding: 10px 16px;
-  background-color: #005831;
-  color: white;
+  background-color: var(--primary);
+  color: var(--white);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: var(--transition);
 }
 
 .create-btn svg {
@@ -44,7 +45,8 @@
 }
 
 .create-btn:hover {
-  background-color: #004526;
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
 }
 
 .filters-section {
