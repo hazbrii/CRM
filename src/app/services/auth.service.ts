@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
+import { Router } from '@angular/router';
 
 export type UserRole = 'Admin' | 'Manager' | 'User' | 'Guest';
 
@@ -94,7 +95,7 @@ export class AuthService {
     role: 'Admin'
   };
 
-  constructor() {
+  constructor(private router: Router) {
     // Initialize with a mock user for demonstration
     // In a real app, you would check local storage or a token
     this.currentUserSubject.next(this.mockUser);
@@ -127,7 +128,16 @@ export class AuthService {
   
   // Mock logout function
   logout(): Observable<boolean> {
+    // Clear any user data
     this.currentUserSubject.next(null);
+    
+    // Clear local storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Navigate to login page
+    this.router.navigate(['/login']);
+    
     return of(true);
   }
   
