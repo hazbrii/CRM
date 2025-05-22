@@ -1,0 +1,261 @@
+.documents-list-container {
+  margin-top: 20px;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 88, 49, 0.1);
+  border-radius: 50%;
+  border-top-color: #005831;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+  color: #666;
+  font-size: 14px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: #ccc;
+  margin-bottom: 15px;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.empty-state p {
+  color: #777;
+  max-width: 400px;
+  margin-bottom: 20px;
+}
+
+.documents-table-container {
+  overflow-x: auto;
+}
+
+.documents-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.documents-table th {
+  background-color: #f4f4f4;
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.documents-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 14px;
+  color: #444;
+}
+
+.documents-table tr:last-child td {
+  border-bottom: none;
+}
+
+.documents-table tr:hover {
+  background-color: #f7f9f8;
+}
+
+.file-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.file-icon i {
+  font-size: 20px;
+  color: #666;
+  min-width: 24px;
+  text-align: center;
+}
+
+.file-icon i.far.fa-file-pdf {
+  color: #dc3545;
+}
+
+.file-icon i.far.fa-file-word {
+  color: #2563eb;
+}
+
+.file-icon i.far.fa-file-excel {
+  color: #16a34a;
+}
+
+.file-icon i.far.fa-file-image {
+  color: #8b5cf6;
+}
+
+.file-label {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+.document-title {
+  min-width: 200px;
+}
+
+.document-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.file-name {
+  font-size: 12px;
+  color: #777;
+  margin-top: 3px;
+}
+
+.actions-cell {
+  white-space: nowrap;
+  min-width: 180px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon-text {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #212529;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-icon-text:hover {
+  background-color: #e9ecef;
+}
+
+.btn-icon-text.edit {
+  background-color: #e6f2ff;
+  color: #0d6efd;
+  border-color: #b8daff;
+}
+
+.btn-icon-text.edit:hover {
+  background-color: #cce5ff;
+}
+
+.btn-icon-text.delete {
+  background-color: #f8d7da;
+  color: #dc3545;
+  border-color: #f5c2c7;
+}
+
+.btn-icon-text.delete:hover {
+  background-color: #f5c2c7;
+}
+
+.btn-text {
+  font-weight: 500;
+}
+
+.btn-icon {
+  font-size: 14px;
+  display: inline-block;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .documents-table thead {
+    display: none;
+  }
+  
+  .documents-table, 
+  .documents-table tbody, 
+  .documents-table tr, 
+  .documents-table td {
+    display: block;
+    width: 100%;
+  }
+  
+  .documents-table tr {
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+  }
+  
+  .documents-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    padding: 10px 15px;
+  }
+  
+  .documents-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: left;
+  }
+  
+  .file-type, .actions-cell {
+    justify-content: flex-start !important;
+  }
+  
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+  }
+  
+  .btn-icon-text {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .file-icon {
+    flex-direction: row;
+    gap: 10px;
+  }
+} 

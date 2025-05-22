@@ -1,0 +1,13 @@
+<div class="documents-container">
+  <div class="page-header">
+    <h1>Document Management</h1>
+    <div class="actions" *ngIf="canManageDocuments">
+      <button class="btn btn-primary" routerLink="upload">
+        <i class="fas fa-plus"></i>
+        Upload Document
+      </button>
+    </div>
+  </div>
+  
+  <router-outlet></router-outlet>
+</div> 

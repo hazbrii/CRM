@@ -38,6 +38,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { requiredPermission: 'canViewReports' }
   },
+  {
+    path: 'documents',
+    loadChildren: () => import('./documents/documents.module').then(m => m.DocumentsModule),
+    canActivate: [authGuard],
+    data: { requiredPermission: 'canViewDocuments' }
+  },
   { path: 'role-tester', component: RoleTesterComponent },
   { path: 'forbidden', component: ForbiddenComponent },
   { path: '', redirectTo: '/login', pathMatch: 'full' },

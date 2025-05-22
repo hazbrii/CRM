@@ -1,0 +1,63 @@
+<div class="documents-list-container">
+  <div *ngIf="isLoading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading documents...</p>
+  </div>
+  
+  <div *ngIf="!isLoading && documents.length === 0" class="no-documents">
+    <div class="empty-state">
+      <i class="far fa-file-alt empty-icon"></i>
+      <h3>No Documents Found</h3>
+      <p>There are no documents available. Upload a document to get started.</p>
+      <button *ngIf="canManageDocuments" class="btn btn-primary" routerLink="upload">
+        <i class="fas fa-upload"></i> Upload Document
+      </button>
+    </div>
+  </div>
+  
+  <div *ngIf="!isLoading && documents.length > 0" class="documents-table-container">
+    <table class="documents-table">
+      <thead>
+        <tr>
+          <th>File Type</th>
+          <th>Title</th>
+          <th>Project</th>
+          <th>Uploaded By</th>
+          <th>Date</th>
+          <th>Size</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let document of documents">
+          <td class="file-type" data-label="File Type">
+            <div class="file-icon">
+              <i [class]="getFileIcon(document.fileType)"></i>
+              <span class="file-label">{{ getFileTypeLabel(document.fileType) }}</span>
+            </div>
+          </td>
+          <td class="document-title" data-label="Title">
+            <div class="document-name">{{ document.title }}</div>
+            <div class="file-name">{{ document.fileName }}</div>
+          </td>
+          <td data-label="Project">{{ document.projectName || 'N/A' }}</td>
+          <td data-label="Uploaded By">{{ document.uploadedBy }}</td>
+          <td data-label="Date">{{ document.uploadDate | date:'MMM d, y' }}</td>
+          <td data-label="Size">{{ getFileSize(document.fileSize) }}</td>
+          <td class="actions-cell" data-label="Actions">
+            <div class="action-buttons">
+              <button *ngIf="canManageDocuments" class="btn btn-icon-text edit" (click)="editDocument(document)" title="Edit">
+                <span class="btn-icon">✎</span>
+                <span class="btn-text">Edit</span>
+              </button>
+              <button *ngIf="canManageDocuments" class="btn btn-icon-text delete" (click)="deleteDocument(document.id)" title="Delete">
+                <span class="btn-icon">✕</span>
+                <span class="btn-text">Delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div> 
