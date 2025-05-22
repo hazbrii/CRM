@@ -1,1 +1,417 @@
-<p>projects-list works!</p>
+<div class="projects-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Project Management</h1>
+      <p class="description">Oversee and manage all company projects</p>
+    </div>
+    <button class="btn-primary create-btn" (click)="openCreateProjectModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Create Project
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-panel">
+    <div class="search-container">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search projects..." 
+        [(ngModel)]="searchText"
+        (input)="filterProjects()"
+      >
+    </div>
+
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label for="teamFilter">Team</label>
+        <select id="teamFilter" [(ngModel)]="selectedTeamId" (change)="filterProjects()" class="filter-select">
+          <option [value]="0">All Teams</option>
+          <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="statusFilter">Status</label>
+        <select id="statusFilter" [(ngModel)]="selectedStatus" (change)="filterProjects()" class="filter-select">
+          <option value="">All Statuses</option>
+          <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group date-range">
+        <label>Date Range</label>
+        <div class="date-inputs">
+          <input 
+            type="date" 
+            [(ngModel)]="startDate" 
+            (change)="filterProjects()"
+            placeholder="Start Date"
+            class="date-input"
+          >
+          <span class="date-separator">to</span>
+          <input 
+            type="date" 
+            [(ngModel)]="endDate" 
+            (change)="filterProjects()"
+            placeholder="End Date"
+            class="date-input"
+          >
+        </div>
+      </div>
+      
+      <button class="btn-secondary" (click)="resetFilters()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 2L22 22"></path>
+          <path d="M22 2L2 22"></path>
+        </svg>
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Projects list -->
+  <div class="projects-content">
+    <div class="projects-list">
+      <table class="projects-table">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Team</th>
+            <th>Timeline</th>
+            <th>Status</th>
+            <th>Progress</th>
+            <th>Budget</th>
+            <th>Links</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let project of filteredProjects">
+            <td class="project-info">
+              <div class="project-name">{{ project.name }}</div>
+              <div class="project-description">{{ project.description }}</div>
+            </td>
+            <td>{{ project.teamName }}</td>
+            <td class="timeline-info">
+              <div class="date">Start: {{ formatDate(project.startDate) }}</div>
+              <div class="date" [class.ongoing]="!project.endDate">
+                End: {{ project.endDate ? formatDate(project.endDate) : 'Ongoing' }}
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(project.status)">
+                {{ project.status }}
+              </span>
+            </td>
+            <td>
+              <div class="progress-container">
+                <div class="progress-bar">
+                  <div class="progress-completed" [style.width.%]="getTaskCompletionPercentage(project)"></div>
+                </div>
+                <div class="progress-text">{{ project.completedTasksCount }}/{{ project.tasksCount }} tasks</div>
+              </div>
+            </td>
+            <td class="budget">{{ project.budget | currency }}</td>
+            <td class="links">
+              <button class="link-btn" title="View Tasks" (click)="navigateToTasks(project)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <span class="link-count">{{ project.tasksCount }}</span>
+              </button>
+              <button class="link-btn" title="View Documents" (click)="navigateToDocuments(project)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span class="link-count">{{ project.documentsCount }}</span>
+              </button>
+            </td>
+            <td class="actions">
+              <button class="action-btn view-btn" title="View Details" (click)="openDetailsModal(project)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+              <button class="action-btn edit-btn" title="Edit Project" (click)="openEditProjectModal(project)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+              <button class="action-btn delete-btn" title="Delete Project" (click)="openDeleteConfirmation(project)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty state -->
+      <div *ngIf="filteredProjects.length === 0 && !isLoading" class="empty-state">
+        <div class="empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </div>
+        <h3 class="empty-title">No projects found</h3>
+        <p class="empty-message" *ngIf="searchText || selectedTeamId !== 0 || selectedStatus !== '' || startDate || endDate">
+          No projects match your filter criteria. Try adjusting your filters.
+        </p>
+        <p class="empty-message" *ngIf="!searchText && selectedTeamId === 0 && selectedStatus === '' && !startDate && !endDate">
+          There are no projects created yet. Create your first project!
+        </p>
+        <button class="btn-primary" (click)="openCreateProjectModal()">Create Project</button>
+      </div>
+
+      <!-- Loading state -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading projects...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Form Modal (Create/Edit) -->
+  <div class="modal-overlay" *ngIf="showProjectModal" (click)="closeProjectModal()">
+    <div class="modal-content large-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editMode ? 'Edit Project' : 'Create New Project' }}</h2>
+        <button class="close-btn" (click)="closeProjectModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="projectForm" (ngSubmit)="saveProject()">
+          <div class="form-columns">
+            <div class="form-column">
+              <div class="form-group">
+                <label for="projectName">Project Name <span class="required">*</span></label>
+                <input type="text" id="projectName" formControlName="name" class="form-control">
+                <div *ngIf="projectForm.get('name')?.invalid && projectForm.get('name')?.touched" class="error-message">
+                  Project name is required
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="projectDescription">Description <span class="required">*</span></label>
+                <textarea id="projectDescription" rows="3" formControlName="description" class="form-control"></textarea>
+                <div *ngIf="projectForm.get('description')?.invalid && projectForm.get('description')?.touched" class="error-message">
+                  Description is required
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="projectTeam">Team <span class="required">*</span></label>
+                <select id="projectTeam" formControlName="teamId" class="form-control">
+                  <option value="" disabled>Select Team</option>
+                  <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
+                </select>
+                <div *ngIf="projectForm.get('teamId')?.invalid && projectForm.get('teamId')?.touched" class="error-message">
+                  Team is required
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="projectStatus">Status <span class="required">*</span></label>
+                <select id="projectStatus" formControlName="status" class="form-control">
+                  <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-column">
+              <div class="form-group">
+                <label for="projectStartDate">Start Date <span class="required">*</span></label>
+                <input type="date" id="projectStartDate" formControlName="startDate" class="form-control">
+                <div *ngIf="projectForm.get('startDate')?.invalid && projectForm.get('startDate')?.touched" class="error-message">
+                  Start date is required
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="projectEndDate">End Date</label>
+                <input type="date" id="projectEndDate" formControlName="endDate" class="form-control">
+                <small class="help-text">Leave blank if ongoing</small>
+              </div>
+              
+              <div class="form-group">
+                <label for="projectBudget">Budget</label>
+                <div class="input-prefix">
+                  <span class="prefix">$</span>
+                  <input type="number" id="projectBudget" formControlName="budget" class="form-control with-prefix">
+                </div>
+              </div>
+              
+              <div class="form-group" *ngIf="editMode">
+                <label>Tasks</label>
+                <div class="task-inputs">
+                  <div class="task-input-group">
+                    <label for="projectTasksCount">Total</label>
+                    <input type="number" id="projectTasksCount" formControlName="tasksCount" class="form-control">
+                  </div>
+                  <div class="task-input-group">
+                    <label for="projectCompletedTasksCount">Completed</label>
+                    <input type="number" id="projectCompletedTasksCount" formControlName="completedTasksCount" class="form-control">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-group" *ngIf="editMode">
+                <label for="projectDocumentsCount">Documents</label>
+                <input type="number" id="projectDocumentsCount" formControlName="documentsCount" class="form-control">
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeProjectModal()">Cancel</button>
+            <button type="submit" class="btn-primary" [disabled]="projectForm.invalid">{{ editMode ? 'Update' : 'Create' }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Delete Project</h2>
+        <button class="close-btn" (click)="closeDeleteModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="delete-warning-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <p class="delete-message">Are you sure you want to delete the project "<strong>{{ selectedProject?.name }}</strong>"?</p>
+        <p class="delete-warning">This action cannot be undone. All project data will be permanently removed.</p>
+        
+        <div class="delete-item-info" *ngIf="selectedProject">
+          <div class="delete-info-row">
+            <span class="info-label">Team:</span>
+            <span class="info-value">{{ selectedProject.teamName }}</span>
+          </div>
+          <div class="delete-info-row">
+            <span class="info-label">Tasks:</span>
+            <span class="info-value">{{ selectedProject.tasksCount }}</span>
+          </div>
+          <div class="delete-info-row">
+            <span class="info-label">Documents:</span>
+            <span class="info-value">{{ selectedProject.documentsCount }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button type="button" class="btn-danger" (click)="deleteProject()">Delete Project</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Details Modal -->
+  <div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+    <div class="modal-content details-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Project Details</h2>
+        <button class="close-btn" (click)="closeDetailsModal()">×</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedProject">
+        <div class="details-header">
+          <h3>{{ selectedProject.name }}</h3>
+          <span class="status-badge" [ngClass]="getStatusClass(selectedProject.status)">
+            {{ selectedProject.status }}
+          </span>
+        </div>
+        
+        <p class="project-description-full">{{ selectedProject.description }}</p>
+        
+        <div class="details-grid">
+          <div class="details-section">
+            <h4>Project Information</h4>
+            <div class="details-item">
+              <span class="details-label">Team</span>
+              <span class="details-value">{{ selectedProject.teamName }}</span>
+            </div>
+            <div class="details-item">
+              <span class="details-label">Start Date</span>
+              <span class="details-value">{{ formatDate(selectedProject.startDate) }}</span>
+            </div>
+            <div class="details-item">
+              <span class="details-label">End Date</span>
+              <span class="details-value">{{ selectedProject.endDate ? formatDate(selectedProject.endDate) : 'Ongoing' }}</span>
+            </div>
+            <div class="details-item">
+              <span class="details-label">Budget</span>
+              <span class="details-value">{{ selectedProject.budget | currency }}</span>
+            </div>
+          </div>
+          
+          <div class="details-section">
+            <h4>Progress</h4>
+            <div class="progress-circle">
+              <svg viewBox="0 0 36 36" class="circular-chart">
+                <path class="circle-bg"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path class="circle"
+                  [attr.stroke-dasharray]="getTaskCompletionPercentage(selectedProject) + ', 100'"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <text x="18" y="20.35" class="percentage">{{ getTaskCompletionPercentage(selectedProject) }}%</text>
+              </svg>
+              <div class="progress-details">
+                <div class="tasks-completed">{{ selectedProject.completedTasksCount }} / {{ selectedProject.tasksCount }}</div>
+                <div class="tasks-label">Tasks Completed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="details-actions">
+          <button class="btn-outline" (click)="navigateToTasks(selectedProject)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            View Tasks ({{ selectedProject.tasksCount }})
+          </button>
+          <button class="btn-outline" (click)="navigateToDocuments(selectedProject)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            View Documents ({{ selectedProject.documentsCount }})
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeDetailsModal()">Close</button>
+        <button type="button" class="btn-primary" (click)="openEditProjectModal(selectedProject!); closeDetailsModal()">Edit Project</button>
+      </div>
+    </div>
+  </div>
+</div>
