@@ -16,6 +16,7 @@ export class SidebarComponent {
     { path: '/users', icon: 'users', label: 'User Management' },
     { path: '/teams', icon: 'users-plus', label: 'Teams' },
     { path: '/projects', icon: 'folder', label: 'Projects' },
+    { path: '/tasks', icon: 'check-square', label: 'Tasks' },
     { path: '/reports', icon: 'bar-chart', label: 'Reports' },
     { path: '/role-tester', icon: 'shield', label: 'Role Tester' },
     { path: '/settings', icon: 'settings', label: 'Settings' }

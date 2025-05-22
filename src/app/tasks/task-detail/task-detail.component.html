@@ -1,0 +1,335 @@
+<div class="task-detail-container">
+  <div class="back-button-container">
+    <button class="btn-back" routerLink="/tasks">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back to Tasks
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading task details...</p>
+  </div>
+
+  <!-- Task Detail Content -->
+  <div class="task-content" *ngIf="!isLoading">
+    
+    <!-- Page Header -->
+    <div class="page-header" [class.editing]="isEditing">
+      <div class="header-content" *ngIf="!isEditing">
+        <div class="task-header">
+          <span class="priority-badge" [ngClass]="getPriorityClass(task ? task.priority : TaskPriority.MEDIUM)">
+            {{ task?.priority }}
+          </span>
+          <h1>{{ task?.title }}</h1>
+        </div>
+        <div class="task-meta">
+          <span class="task-id">#{{ task?.id }}</span>
+          <span class="task-date" *ngIf="task?.createdAt">Created {{ formatDate(task?.createdAt) }}</span>
+          <span class="task-date" *ngIf="task?.updatedAt && task?.createdAt && task?.updatedAt !== task?.createdAt">
+            Updated {{ formatDate(task?.updatedAt) }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="header-actions" *ngIf="!isEditing">
+        <div class="status-dropdown">
+          <span class="status-label">Status:</span>
+          <select 
+            [ngClass]="getStatusClass(task ? task.status : TaskStatus.TODO)" 
+            [disabled]="!canChangeTaskStatus()"
+            (change)="updateStatus($any($event.target).value)" 
+            class="status-select">
+            <option *ngFor="let status of statuses" [value]="status" [selected]="status === task?.status">
+              {{ status }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="task-actions">
+          <button class="btn-secondary" (click)="startEditing()" *ngIf="canEditTask()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Edit Task
+          </button>
+          <button class="btn-danger" (click)="confirmDelete()" *ngIf="canDeleteTask()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <!-- Form Header (Edit/Create Mode) -->
+      <div class="form-header" *ngIf="isEditing">
+        <h1>{{ isNewTask ? 'Create New Task' : 'Edit Task' }}</h1>
+        <div class="form-actions">
+          <button class="btn-secondary" (click)="cancelEditing()">
+            Cancel
+          </button>
+          <button class="btn-primary" (click)="saveTask()" [disabled]="taskForm.invalid || isSaving">
+            {{ isSaving ? 'Saving...' : (isNewTask ? 'Create' : 'Save') }}
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Task Form (Edit/Create Mode) -->
+    <div class="task-form" *ngIf="isEditing">
+      <form [formGroup]="taskForm">
+        <div class="form-grid">
+          <!-- Left Column -->
+          <div class="form-column">
+            <div class="form-group">
+              <label for="taskTitle">Title <span class="required">*</span></label>
+              <input type="text" id="taskTitle" formControlName="title" class="form-control">
+              <div *ngIf="taskForm.get('title')?.invalid && taskForm.get('title')?.touched" class="error-message">
+                Title is required
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="taskDescription">Description <span class="required">*</span></label>
+              <textarea id="taskDescription" rows="5" formControlName="description" class="form-control"></textarea>
+              <div *ngIf="taskForm.get('description')?.invalid && taskForm.get('description')?.touched" class="error-message">
+                Description is required
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="taskTeam">Team</label>
+              <select id="taskTeam" formControlName="teamId" class="form-control">
+                <option [ngValue]="null">None</option>
+                <option *ngFor="let team of teams" [ngValue]="team.id">{{ team.name }}</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="taskProject">Project</label>
+              <select id="taskProject" formControlName="projectId" class="form-control">
+                <option [ngValue]="null">None</option>
+                <option *ngFor="let project of projects" [ngValue]="project.id">{{ project.name }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Right Column -->
+          <div class="form-column">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="taskStatus">Status <span class="required">*</span></label>
+                <select id="taskStatus" formControlName="status" class="form-control">
+                  <option *ngFor="let status of statuses" [ngValue]="status">{{ status }}</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="taskPriority">Priority <span class="required">*</span></label>
+                <select id="taskPriority" formControlName="priority" class="form-control">
+                  <option *ngFor="let priority of priorities" [ngValue]="priority">{{ priority }}</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="taskDueDate">Due Date</label>
+              <input type="date" id="taskDueDate" formControlName="dueDate" class="form-control">
+            </div>
+            
+            <div class="form-group">
+              <label for="taskAssigned">Assigned To</label>
+              <select id="taskAssigned" formControlName="assignedUserId" class="form-control">
+                <option [ngValue]="null">Unassigned</option>
+                <!-- This would typically be populated with users from a UserService -->
+                <option [ngValue]="currentUser?.id">{{ currentUser?.name || 'Me' }}</option>
+              </select>
+            </div>
+            
+            <div class="form-group subtasks-container">
+              <div class="subtasks-header">
+                <label>Subtasks</label>
+                <button type="button" class="btn-icon-small" (click)="addSubtask()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add Subtask
+                </button>
+              </div>
+              
+              <div formArrayName="subtasks" class="subtasks-list">
+                <div 
+                  *ngFor="let subtaskControl of subtasksFormArray.controls; let i = index" 
+                  [formGroupName]="i"
+                  class="subtask-item">
+                  <div class="subtask-checkbox">
+                    <input type="checkbox" [id]="'subtask' + i" formControlName="completed">
+                    <label [for]="'subtask' + i"></label>
+                  </div>
+                  <input type="text" formControlName="title" class="form-control subtask-input" placeholder="Subtask title">
+                  <button type="button" class="btn-icon-small delete-btn" (click)="removeSubtask(i)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 6L6 18"></path>
+                      <path d="M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+                
+                <div *ngIf="subtasksFormArray.controls.length === 0" class="empty-subtasks">
+                  No subtasks added
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Task Details (View Mode) -->
+    <div class="task-details" *ngIf="!isEditing && task">
+      <div class="task-info-columns">
+        <!-- Left Column: Description -->
+        <div class="task-column">
+          <section class="task-section">
+            <h3>Description</h3>
+            <div class="task-description">
+              {{ task.description }}
+            </div>
+          </section>
+        </div>
+        
+        <!-- Right Column: Details -->
+        <div class="task-column">
+          <section class="task-section">
+            <h3>Details</h3>
+            <div class="detail-item">
+              <div class="detail-label">Team:</div>
+              <div class="detail-value">{{ getTeamName(task.teamId) }}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Project:</div>
+              <div class="detail-value">{{ getProjectName(task.projectId) }}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Assigned to:</div>
+              <div class="detail-value">
+                {{ task.assignedUserName || 'Unassigned' }}
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Due date:</div>
+              <div class="detail-value" [ngClass]="getDueDateClass(task.dueDate)">
+                {{ task.dueDate ? formatDate(task.dueDate) : 'No due date' }}
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+      
+      <!-- Subtasks Section -->
+      <section class="task-section subtasks-section">
+        <h3>Subtasks</h3>
+        <div class="subtasks-list view-mode">
+          <div *ngFor="let subtask of task.subtasks; let i = index" class="subtask-item view-mode">
+            <div class="subtask-checkbox">
+              <input 
+                type="checkbox" 
+                [id]="'subtask-view' + i" 
+                [checked]="subtask.completed"
+                (change)="toggleSubtaskCompletion(i)" 
+                [disabled]="!canEditTask()">
+              <label [for]="'subtask-view' + i"></label>
+            </div>
+            <span class="subtask-title" [class.completed]="subtask.completed">
+              {{ subtask.title }}
+            </span>
+          </div>
+          
+          <div *ngIf="task.subtasks.length === 0" class="empty-subtasks">
+            No subtasks added
+          </div>
+        </div>
+      </section>
+      
+      <!-- Comments Section -->
+      <section class="task-section comments-section">
+        <h3>Comments</h3>
+        
+        <div class="comment-form">
+          <textarea 
+            class="comment-input" 
+            placeholder="Add a comment..." 
+            [(ngModel)]="newCommentText"
+            [disabled]="!currentUser"></textarea>
+          <button 
+            class="btn-primary"
+            (click)="addComment()"
+            [disabled]="!(newCommentText && newCommentText.trim()) || !currentUser">
+            Add Comment
+          </button>
+        </div>
+        
+        <div class="comments-list">
+          <div *ngFor="let comment of task.comments" class="comment-item">
+            <div class="comment-header">
+              <div class="comment-user">
+                <div class="user-avatar">{{ comment.userName.charAt(0) }}</div>
+                <div class="user-info">
+                  <div class="user-name">{{ comment.userName }}</div>
+                  <div class="user-role">{{ comment.userRole }}</div>
+                </div>
+              </div>
+              <div class="comment-actions" *ngIf="isOwnComment(comment) || canDeleteComment()">
+                <button class="btn-icon-small" (click)="deleteComment(comment.id)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="comment-date">{{ formatDate(comment.createdAt) }}</div>
+            <div class="comment-content">{{ comment.content }}</div>
+          </div>
+          
+          <div *ngIf="task.comments.length === 0" class="empty-comments">
+            No comments yet
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+    <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Delete Task</h3>
+        <button class="close-btn" (click)="cancelDelete()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="warning-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <p class="warning-message">Are you sure you want to delete this task?</p>
+        <p class="warning-details">This action cannot be undone. All task data, subtasks, and comments will be permanently removed.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cancelDelete()">Cancel</button>
+        <button class="btn-danger" (click)="deleteTask()">Delete Task</button>
+      </div>
+    </div>
+  </div>
+</div>

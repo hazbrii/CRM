@@ -27,6 +27,12 @@ export const routes: Routes = [
     data: { requiredPermission: 'canViewProjects' }
   },
   {
+    path: 'tasks',
+    loadChildren: () => import('./tasks/tasks.module').then(m => m.TasksModule),
+    canActivate: [authGuard],
+    data: { requiredPermission: '' }
+  },
+  {
     path: 'reports',
     loadChildren: () => import('./reports/reports.module').then(m => m.ReportsModule),
     canActivate: [authGuard],

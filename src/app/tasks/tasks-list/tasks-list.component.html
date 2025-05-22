@@ -1,0 +1,319 @@
+<div class="tasks-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Task Management</h1>
+      <p class="description">View and manage tasks across all projects and teams</p>
+    </div>
+    <div class="header-actions">
+      <button 
+        class="btn-icon" 
+        title="{{ viewMode === 'list' ? 'Switch to board view' : 'Switch to list view' }}" 
+        (click)="toggleViewMode()">
+        <svg *ngIf="viewMode === 'list'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <svg *ngIf="viewMode === 'board'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+      </button>
+      <button class="btn-toggle" [class.active]="showMyTasksOnly" (click)="toggleMyTasks()">
+        <span class="btn-toggle-text">My Tasks</span>
+      </button>
+      <button class="btn-primary" (click)="createNewTask()" *ngIf="canCreateTask()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Create Task
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-panel">
+    <div class="search-container">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search tasks..." 
+        [(ngModel)]="filter.searchText"
+        (input)="applyFilters()"
+      >
+    </div>
+
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label for="statusFilter">Status</label>
+        <select id="statusFilter" [(ngModel)]="filter.status" (change)="applyFilters()" class="filter-select">
+          <option [ngValue]="null">All Statuses</option>
+          <option *ngFor="let status of taskStatuses" [ngValue]="status">{{ status }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="priorityFilter">Priority</label>
+        <select id="priorityFilter" [(ngModel)]="filter.priority" (change)="applyFilters()" class="filter-select">
+          <option [ngValue]="null">All Priorities</option>
+          <option *ngFor="let priority of taskPriorities" [ngValue]="priority">{{ priority }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="teamFilter">Team</label>
+        <select id="teamFilter" [(ngModel)]="filter.teamId" (change)="applyFilters()" class="filter-select">
+          <option [ngValue]="null">All Teams</option>
+          <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="projectFilter">Project</label>
+        <select id="projectFilter" [(ngModel)]="filter.projectId" (change)="applyFilters()" class="filter-select">
+          <option [ngValue]="null">All Projects</option>
+          <option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group date-range">
+        <label>Due Date</label>
+        <div class="date-inputs">
+          <input 
+            type="date" 
+            [(ngModel)]="filter.dueStartDate" 
+            (change)="applyFilters()"
+            placeholder="From"
+            class="date-input"
+          >
+          <span class="date-separator">to</span>
+          <input 
+            type="date" 
+            [(ngModel)]="filter.dueEndDate" 
+            (change)="applyFilters()"
+            placeholder="To"
+            class="date-input"
+          >
+        </div>
+      </div>
+      
+      <button class="btn-secondary" (click)="resetFilters()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 2L22 22"></path>
+          <path d="M22 2L2 22"></path>
+        </svg>
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div class="tasks-content" *ngIf="viewMode === 'list'">
+    <table class="tasks-table">
+      <thead>
+        <tr>
+          <th class="th-title" (click)="setSortField('title')">
+            Task
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sort-icon">
+              <path d="M7 10l5 5 5-5"></path>
+            </svg>
+          </th>
+          <th>Project</th>
+          <th>Team</th>
+          <th class="th-priority" (click)="setSortField('priority')">
+            Priority
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sort-icon">
+              <path d="M7 10l5 5 5-5"></path>
+            </svg>
+          </th>
+          <th class="th-status" (click)="setSortField('status')">
+            Status
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sort-icon">
+              <path d="M7 10l5 5 5-5"></path>
+            </svg>
+          </th>
+          <th class="th-due-date" (click)="setSortField('dueDate')">
+            Due Date
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sort-icon">
+              <path d="M7 10l5 5 5-5"></path>
+            </svg>
+          </th>
+          <th>Progress</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let task of filteredTasks">
+          <td class="task-info" (click)="viewTaskDetails(task)">
+            <div class="task-title">{{ task.title }}</div>
+            <div class="task-description">{{ task.description }}</div>
+            <div class="task-assignee" *ngIf="task.assignedUserName">
+              <span class="assignee-label">Assigned to:</span> {{ task.assignedUserName }}
+            </div>
+          </td>
+          <td>{{ getProjectName(task.projectId) }}</td>
+          <td>{{ getTeamName(task.teamId) }}</td>
+          <td>
+            <span class="priority-badge" [ngClass]="getPriorityClass(task.priority)">
+              {{ task.priority }}
+            </span>
+          </td>
+          <td>
+            <div class="status-dropdown" *ngIf="canChangeTaskStatus(task)">
+              <select 
+                [ngClass]="getStatusClass(task.status)" 
+                [value]="task.status"
+                (change)="updateTaskStatus(task, $any($event.target).value)" 
+                class="status-select">
+                <option *ngFor="let status of taskStatuses" [value]="status" [selected]="status === task.status">
+                  {{ status }}
+                </option>
+              </select>
+            </div>
+            <span class="status-badge" [ngClass]="getStatusClass(task.status)" *ngIf="!canChangeTaskStatus(task)">
+              {{ task.status }}
+            </span>
+          </td>
+          <td class="due-date" [ngClass]="getDueDateClass(task.dueDate)">
+            <div class="date-value">{{ formatDate(task.dueDate) }}</div>
+            <div class="days-remaining" *ngIf="task.dueDate">{{ getDaysRemaining(task.dueDate) }}</div>
+          </td>
+          <td>
+            <div class="progress-container" *ngIf="task.subtasks.length > 0">
+              <div class="progress-bar">
+                <div class="progress-completed" [style.width.%]="getSubtasksCompletionPercentage(task)"></div>
+              </div>
+              <div class="progress-text">{{ getSubtasksCompletionText(task) }}</div>
+            </div>
+            <div *ngIf="task.subtasks.length === 0">No subtasks</div>
+          </td>
+          <td class="actions">
+            <button class="action-btn view-btn" title="View Details" (click)="viewTaskDetails(task)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+            <button class="action-btn edit-btn" title="Edit Task" *ngIf="canEditTask(task)" (click)="viewTaskDetails(task)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="action-btn delete-btn" title="Delete Task" *ngIf="canDeleteTask(task)" (click)="viewTaskDetails(task)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty state -->
+    <div *ngIf="filteredTasks.length === 0 && !isLoading" class="empty-state">
+      <div class="empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M9 11l3 3L22 4"></path>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+      </div>
+      <h3 class="empty-title">No tasks found</h3>
+      <p class="empty-message" *ngIf="filter.searchText || filter.status || filter.priority || filter.teamId || filter.projectId || filter.dueStartDate || filter.dueEndDate">
+        No tasks match your filter criteria. Try adjusting your filters.
+      </p>
+      <p class="empty-message" *ngIf="!filter.searchText && !filter.status && !filter.priority && !filter.teamId && !filter.projectId && !filter.dueStartDate && !filter.dueEndDate">
+        There are no tasks created yet.
+      </p>
+      <button class="btn-primary" (click)="createNewTask()" *ngIf="canCreateTask()">Create Task</button>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading tasks...</p>
+    </div>
+  </div>
+
+  <!-- Board View -->
+  <div class="tasks-board" *ngIf="viewMode === 'board'">
+    <div class="board-columns">
+      <div class="board-column" *ngFor="let status of taskStatuses">
+        <div class="column-header" [ngClass]="getStatusClass(status)">
+          <h3>{{ status }}</h3>
+          <span class="task-count">{{ getTasksByStatus(status).length }}</span>
+        </div>
+        <div class="column-content">
+          <div class="column-tasks">
+            <div class="task-card" *ngFor="let task of getTasksByStatus(status)" (click)="viewTaskDetails(task)">
+              <div class="card-header">
+                <span class="priority-indicator" [ngClass]="getPriorityClass(task.priority)" title="{{ task.priority }}"></span>
+                <span class="task-id">#{{ task.id }}</span>
+              </div>
+              <div class="card-title">{{ task.title }}</div>
+              <div class="card-description">{{ task.description }}</div>
+              
+              <div class="card-meta">
+                <div class="card-project" *ngIf="task.projectName">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  <span>{{ task.projectName }}</span>
+                </div>
+                
+                <div class="card-date" [ngClass]="getDueDateClass(task.dueDate)" *ngIf="task.dueDate">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span>{{ formatDate(task.dueDate) }}</span>
+                </div>
+              </div>
+              
+              <div class="card-footer">
+                <div class="card-subtasks" *ngIf="task.subtasks.length > 0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                  </svg>
+                  <span>{{ getSubtasksCompletionText(task) }}</span>
+                </div>
+                
+                <div class="card-assignee" *ngIf="task.assignedUserName">
+                  <div class="user-avatar">{{ task.assignedUserName.charAt(0) }}</div>
+                </div>
+              </div>
+              
+              <div class="card-progress" *ngIf="task.subtasks.length > 0">
+                <div class="progress-bar">
+                  <div class="progress-completed" [style.width.%]="getSubtasksCompletionPercentage(task)"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="empty-column" *ngIf="getTasksByStatus(status).length === 0">
+              <p>No tasks</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
