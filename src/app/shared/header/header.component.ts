@@ -52,18 +52,31 @@ export class HeaderComponent {
     console.log('Profile dropdown closed');
   }
   
+  // Simple and direct logout method that works independently
+  logoutNow(): void {
+    console.log('Direct logout button clicked');
+    
+    try {
+      // Clear all tokens
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Force immediate navigation to login page
+      window.location.href = '/login?logout=true';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even on error, try to redirect
+      window.location.href = '/login';
+    }
+  }
+  
+  // Keep existing method for backward compatibility
   logout(event?: MouseEvent): void {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
     
-    console.log('Logout clicked');
-    this.authService.logout().subscribe({
-      next: () => {
-        console.log('Logout successful, navigating to login');
-        this.router.navigate(['/login']);
-      }
-    });
+    this.logoutNow();
   }
 }

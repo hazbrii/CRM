@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -15,14 +15,17 @@ export class LoginComponent implements OnInit {
   showPassword = false;
   isLoading = false;
   loginError: string | null = null;
+  logoutMessage: string | null = null;
   
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
   
   ngOnInit(): void {
     this.initForm();
+    this.checkRedirectReason();
     this.checkExistingSession();
   }
   
@@ -43,6 +46,14 @@ export class LoginComponent implements OnInit {
     this.loginForm.valueChanges.subscribe(() => {
       if (this.loginError) {
         this.loginError = null;
+      }
+    });
+  }
+  
+  private checkRedirectReason(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['logout'] === 'true') {
+        this.logoutMessage = 'You have been successfully logged out.';
       }
     });
   }
