@@ -13,6 +13,8 @@ export interface UserPermissions {
   canEditProjects: boolean;
   canViewReports: boolean;
   canManageProjects: boolean;
+  canViewDocuments: boolean;
+  canManageDocuments: boolean;
 }
 
 export interface User {
@@ -32,7 +34,9 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canViewProjects: true,
     canEditProjects: true,
     canViewReports: true,
-    canManageProjects: true
+    canManageProjects: true,
+    canViewDocuments: true,
+    canManageDocuments: true
   },
   'Manager': {
     canViewUsers: true,
@@ -43,7 +47,9 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canViewProjects: true,
     canEditProjects: true,
     canViewReports: true,
-    canManageProjects: true
+    canManageProjects: true,
+    canViewDocuments: true,
+    canManageDocuments: true
   },
   'User': {
     canViewUsers: false,
@@ -54,7 +60,9 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canViewProjects: true,
     canEditProjects: false,
     canViewReports: false,
-    canManageProjects: false
+    canManageProjects: false,
+    canViewDocuments: true,
+    canManageDocuments: false
   },
   'Guest': {
     canViewUsers: false,
@@ -65,7 +73,9 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canViewProjects: false,
     canEditProjects: false,
     canViewReports: false,
-    canManageProjects: false
+    canManageProjects: false,
+    canViewDocuments: false,
+    canManageDocuments: false
   }
 };
 
