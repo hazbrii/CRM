@@ -1,0 +1,29 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-container {
+  display: flex;
+  flex: 1;
+  padding-top: 60px; /* Match header height */
+  padding-bottom: 50px; /* Match footer height */
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  margin-left: 250px; /* Match sidebar width */
+  background-color: #f9f9f9;
+  min-height: calc(100vh - 110px); /* Viewport height minus header and footer */
+  width: calc(100% - 250px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .content {
+    margin-left: 0;
+    width: 100%;
+  }
+}

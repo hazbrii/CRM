@@ -1,1 +1,19 @@
-<router-outlet></router-outlet>
+<!-- Main layout for authenticated pages -->
+<div class="app-container" *ngIf="showLayout">
+  <app-header></app-header>
+  
+  <div class="main-container">
+    <app-sidebar></app-sidebar>
+    
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+  
+  <app-footer></app-footer>
+</div>
+
+<!-- Simple layout for auth pages -->
+<div class="auth-container" *ngIf="!showLayout">
+  <router-outlet></router-outlet>
+</div>
